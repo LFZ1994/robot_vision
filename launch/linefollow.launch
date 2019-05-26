@@ -1,0 +1,10 @@
+<launch>
+    
+    <include file="$(find base_control)/launch/base_control.launch" />
+
+    <include file="$(find robot_vision)/launch/robot_camera.launch" />
+
+    <node pkg="robot_vision" name="linefollow" type="linefollow.py" output="screen">
+        <remap from="input_rgb_image" to="/image_raw" />
+    </node>
+</launch>
