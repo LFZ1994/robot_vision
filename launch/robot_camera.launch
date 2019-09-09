@@ -1,15 +1,59 @@
 <launch>
+  <arg name="base_type"       default="$(env BASE_TYPE)" /> 
+  <arg name="camera_tf"       default="false" />    
+  <arg name="base_frame"       default="base_footprint" />    
+  <arg name="camera_frame" default="base_camera_link"/>  
+  <!--NanoRobot camera image need flip-->
+  <group if="$(eval base_type == 'NanoRobot')">
+    <node name="uvc_camera" pkg="uvc_camera" type="uvc_camera_node" output="screen" >
+      <param name="video_device" value="/dev/video0" />
+      <param name="fps" value="30" />
+      <param name="image_width" value="640" />
+      <param name="image_height" value="480" />
+      <param name="pixel_format" value="jpeg" />
+      <param name="frame_id" value="$(arg camera_frame)" />
+      <param name="io_method" value="mmap"/>
+      <param name="horizontal_flip" value="true" />
+      <param name="vertical_flip" value="true" />  
+    </node>
+  </group>
 
-  <node name="uvc_camera" pkg="uvc_camera" type="uvc_camera_node" output="screen" >
-    <param name="video_device" value="/dev/video0" />
-    <param name="fps" value="30" />
-    <param name="image_width" value="640" />
-    <param name="image_height" value="480" />
-    <param name="pixel_format" value="jpeg" />
-    <param name="camera_frame_id" value="usb_cam" />
-    <param name="io_method" value="mmap"/>
-    <param name="horizontal_flip" value="true" />
-    <param name="vertical_flip" value="true" />  
-  </node>
+  <group unless="$(eval base_type == 'NanoRobot')">
+    <node name="uvc_camera" pkg="uvc_camera" type="uvc_camera_node" output="screen" >
+      <param name="video_device" value="/dev/video0" />
+      <param name="fps" value="30" />
+      <param name="image_width" value="640" />
+      <param name="image_height" value="480" />
+      <param name="pixel_format" value="jpeg" />
+      <param name="frame_id" value="$(arg camera_frame)" />
+      <param name="io_method" value="mmap"/>
+    
+    </node>
+  </group>
+
+  <!--Pub camera tf info-->
+  <group if="$(arg camera_tf)">
+    <group if="$(eval base_type == 'NanoRobot')">
+        <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_camera"
+            args="0.02225 0.0 0.10 0.0 0.0 0.0 $(arg base_frame) $(arg camera_frame) 20">
+        </node>
+    </group>
+    <group if="$(eval base_type == '4WD')">
+        <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_camera"
+            args="0.1 0.02 0.25 0.0 0.0 0.0 $(arg base_frame) $(arg camera_frame) 20">
+        </node>
+    </group>
+    <group if="$(eval base_type == '4WD_OMNI')">
+        <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_camera"
+            args="0.1 0.02 0.25 0.0 0.0 0.0 $(arg base_frame) $(arg camera_frame) 20">
+        </node>
+    </group>
+    <group if="$(eval base_type == 'NanoCar')">
+        <node pkg="tf" type="static_transform_publisher" name="base_footprint_to_camera"
+            args="0.1024 0.0 0.1 0.0 0.0 0.0 $(arg base_frame) $(arg camera_frame) 20">
+        </node>
+    </group>
+  </group>
+
 
 </launch>
