@@ -30,6 +30,8 @@ class linefollow:
 
         self.bridge = CvBridge()
         self.image_pub = rospy.Publisher("cv_bridge_image", Image, queue_size=1)
+        self.image_gray_pub = rospy.Publisher("gray_image_image", Image, queue_size=1)
+
         self.image_sub = rospy.Subscriber("input_rgb_image", Image, self.image_callback, queue_size=1)
         self.pub_cmd = rospy.Publisher('cmd_vel', Twist, queue_size=5)
 
@@ -70,11 +72,11 @@ class linefollow:
                 self.twist.linear.x = 0.1
                 self.twist.angular.z = (80-(sumvalue/counter))/80.0*1.0
                 self.pub_cmd.publish(self.twist)
+                self.logmark = True
             else:
                 if self.logmark:
                     self.logmark = False
                     rospy.loginfo("Unrecognized Line in vision")
-            self.logmark = True
         else:
             if self.logmark:
                 self.logmark = False
@@ -82,8 +84,9 @@ class linefollow:
             
 
 
-        self.image_pub.publish(self.bridge.cv2_to_imgmsg(binary , encoding="passthrough"))
 
+        self.image_pub.publish(self.bridge.cv2_to_imgmsg(binary , encoding="passthrough"))
+        self.image_gray_pub.publish(self.bridge.cv2_to_imgmsg(gray , encoding="passthrough"))
         # cv2.imshow('gray',frame)
 
     def cleanup(self):
@@ -93,7 +96,7 @@ class linefollow:
 if __name__ == '__main__':
     try:
         # 初始化ros节点
-        rospy.init_node("line follow")
+        rospy.init_node("linefollow")
         linefollow()
         rospy.loginfo("line follow is started..")
         rospy.loginfo("Please subscribe the ROS image.")
