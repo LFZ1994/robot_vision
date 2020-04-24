@@ -1,6 +1,0 @@
-<launch>
-
-    <node pkg="robot_vision" name="parking" type="parking.py" output="screen">
-        <remap from="input_rgb_image" to="/image_raw" />
-    </node>
-</launch>

@@ -1,10 +1,22 @@
 <launch>
-    
-    <include file="$(find base_control)/launch/base_control.launch" />
+    <arg name="robot_name" default=""/>   <!-- support multi robot -->
+    <include file="$(find base_control)/launch/base_control.launch" >
+        <arg name="robot_name"            value="$(arg robot_name)"/>
+    </include>
+    <include file="$(find robot_vision)/launch/robot_camera.launch" >
+            <arg name="robot_name"            value="$(arg robot_name)"/>
+    </include>
+    <group unless="$(eval robot_name == '')">
+        <group ns="$(arg robot_name)">
+            <node pkg="robot_vision" name="linefollow" type="linefollow.py" output="screen">
+                <remap from="input_rgb_image" to="image_raw" />
+            </node>
+        </group>
+    </group>
 
-    <include file="$(find robot_vision)/launch/robot_camera.launch" />
-
-    <node pkg="robot_vision" name="linefollow" type="linefollow.py" output="screen">
-        <remap from="input_rgb_image" to="/image_raw" />
-    </node>
+    <group if="$(eval robot_name == '')">
+        <node pkg="robot_vision" name="linefollow" type="linefollow.py" output="screen">
+            <remap from="input_rgb_image" to="/image_raw" />
+        </node>
+    </group>
 </launch>
