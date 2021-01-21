@@ -23,6 +23,7 @@ from sensor_msgs.msg import Image, RegionOfInterest
 from cv_bridge import CvBridge, CvBridgeError
 from geometry_msgs.msg import Twist
 
+base_type = os.getenv('BASE_TYPE')
 
 class linefollow:
     def __init__(self):
@@ -49,18 +50,25 @@ class linefollow:
 
         gray = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
 
-        ret,binary  = cv2.threshold(gray,60,255,cv2.THRESH_BINARY)
+        ret,binary  = cv2.threshold(gray,100,255,cv2.THRESH_BINARY)
         kernel = np.ones((5,5),np.uint8)
         opening = cv2.morphologyEx(binary,cv2.MORPH_OPEN,kernel)
         binary = cv2.morphologyEx(binary,cv2.MORPH_CLOSE,kernel)
         counter=0
         sumvalue=0
         for i in range(1,160):
-            if binary[20,i] == 0:
-                counter+=1
-                sumvalue+=i
+            if('_Pro' in base_type or '_SE' in base_type ):
+                if binary[119,i] == 0:
+                    counter+=1
+                    sumvalue+=i
+                else:
+                    pass
             else:
-                pass
+                if binary[20,i] == 0:
+                    counter+=1
+                    sumvalue+=i
+                else:
+                    pass
         self.twist.linear.x = 0
         self.twist.linear.y = 0
         self.twist.linear.z = 0
@@ -70,7 +78,10 @@ class linefollow:
         if(counter != 0):
             if (counter < 100):
                 self.twist.linear.x = 0.1
-                self.twist.angular.z = (80-(sumvalue/counter))/80.0*1.0
+                if('_Pro' in base_type or '_SE' in base_type ):
+                    self.twist.angular.z = (100-(sumvalue/counter))/80.0*1.0
+                else:
+                    self.twist.angular.z = (80-(sumvalue/counter))/80.0*1.0
                 self.pub_cmd.publish(self.twist)
                 self.logmark = True
             else:
